@@ -9,14 +9,35 @@ import (
 )
 
 func main() {
-	godotenv.Load("..env")
+	if err := godotenv.Load("../.env"); err != nil {
+		panic(err)
+	}
+	public := "../public"
 	port := os.Getenv("PORT")
+
 	r := mux.NewRouter()
-	r.HandleFunc("v1/healtz", handlerHealth).Methods("GET")
+	defaultHandler := http.StripPrefix("/app", http.FileServer(http.Dir(public)))
+	r.Handle("/app/*", defaultHandler)
+
+	r.HandleFunc("/v1/healthz", handlerHealth).Methods("GET")
+	corsMux := middlewareCors(r)
 
 	srv := &http.Server{
 		Addr:    ":" + port,
-		Handler: r,
+		Handler: corsMux,
 	}
 	srv.ListenAndServe()
+}
+
+func middlewareCors(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "*")
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
