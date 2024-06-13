@@ -20,6 +20,7 @@ func main() {
 	r.Handle("/app/*", defaultHandler)
 
 	r.HandleFunc("/v1/healthz", handlerHealth).Methods("GET")
+	r.HandleFunc("/v1/err", handleError).Methods("GET")
 	corsMux := middlewareCors(r)
 
 	srv := &http.Server{
