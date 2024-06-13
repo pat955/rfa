@@ -1,12 +1,15 @@
 package main
 
 import (
+	"database/sql"
+	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/pat955/rss_feed_aggregator/internal/database"
 )
 
 func main() {
@@ -15,6 +18,15 @@ func main() {
 	}
 	public := "../public"
 	port := os.Getenv("PORT")
+	dbURL := os.Getenv("CONNECTION_STRING")
+
+	db, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		panic(err)
+	}
+	dbQueries := database.New(db)
+	apiConfig := apiConfig{DB: dbQueries}
+	fmt.Println(apiConfig)
 
 	r := mux.NewRouter()
 	defaultHandler := http.StripPrefix("/app", http.FileServer(http.Dir(public)))
@@ -42,4 +54,8 @@ func middlewareCors(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+type apiConfig struct {
+	DB *database.Queries
 }
