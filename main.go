@@ -24,6 +24,7 @@ func main() {
 	r.HandleFunc("/v1/healthz", api.Health).Methods("GET")
 	r.HandleFunc("/v1/err", api.Error).Methods("GET")
 	r.HandleFunc("/v1/users", api.AddUser).Methods("POST")
+	r.HandleFunc("/v1/users", api.GetUser).Methods("GET")
 	corsMux := middlewareLog(middlewareCors(r))
 
 	srv := &http.Server{
