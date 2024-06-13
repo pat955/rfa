@@ -47,3 +47,50 @@ func (q *Queries) CreateFeed(ctx context.Context, arg CreateFeedParams) (Feed, e
 	)
 	return i, err
 }
+
+const deleteFeed = `-- name: DeleteFeed :exec
+DELETE FROM feeds
+WHERE url = $1
+`
+
+func (q *Queries) DeleteFeed(ctx context.Context, url string) error {
+	_, err := q.db.ExecContext(ctx, deleteFeed, url)
+	return err
+}
+
+const getFeed = `-- name: GetFeed :one
+SELECT id, created_at, updated_at, name, url, user_id FROM feeds
+WHERE url = $1
+`
+
+func (q *Queries) GetFeed(ctx context.Context, url string) (Feed, error) {
+	row := q.db.QueryRowContext(ctx, getFeed, url)
+	var i Feed
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.Url,
+		&i.UserID,
+	)
+	return i, err
+}
+
+const retrieveFeeds = `-- name: RetrieveFeeds :one
+SELECT id, created_at, updated_at, name, url, user_id FROM feeds
+`
+
+func (q *Queries) RetrieveFeeds(ctx context.Context) (Feed, error) {
+	row := q.db.QueryRowContext(ctx, retrieveFeeds)
+	var i Feed
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.Url,
+		&i.UserID,
+	)
+	return i, err
+}
