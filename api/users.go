@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"net/http"
 	"strings"
 	"time"
@@ -34,28 +33,22 @@ func AddUser(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, 200, newUser)
 }
 
-func GetUser(w http.ResponseWriter, r *http.Request) {
-	apiKey, err := getApiKey(r)
-	if err != nil {
-		respondWithError(w, 403, err.Error())
-		return
-	}
-	apiConfig := Connect()
-	user, err := apiConfig.DB.GetUserByApiKey(r.Context(), apiKey)
-	if err != nil {
-		respondWithError(w, 404, err.Error())
-		return
-	}
+func GetUser(w http.ResponseWriter, r *http.Request, user database.User) {
 	respondWithJSON(w, 200, user)
-
 }
 
-func getApiKey(r *http.Request) (string, error) {
+func GetApiKey(w http.ResponseWriter, r *http.Request) string {
 	auth := r.Header.Get("Authorization")
+	if auth == "" {
+		respondWithError(w, 403, "empty authorization header")
+		return ""
+	}
+
 	apiString := strings.Split(auth, "ApiKey ")
 	if len(apiString) != 2 || apiString[1] == "" {
-		return "", errors.New("authorization invalid")
+		respondWithError(w, 403, "no apikey")
+		return ""
 	}
-	return apiString[1], nil
+	return apiString[1]
 
 }
