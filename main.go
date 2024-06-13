@@ -26,6 +26,8 @@ func main() {
 	r.HandleFunc("/v1/err", api.Error).Methods("GET")
 	r.HandleFunc("/v1/users", api.AddUser).Methods("POST")
 	r.HandleFunc("/v1/users", authMW(api.GetUser)).Methods("GET")
+	r.HandleFunc("/v1/feeds", authMW(api.CreateFeed)).Methods("POST")
+
 	corsMux := logMW(corsMW(r))
 
 	srv := &http.Server{
