@@ -29,6 +29,7 @@ func main() {
 	r.HandleFunc("/v1/feeds", api.GetAllFeeds).Methods("GET")
 	r.HandleFunc("/v1/feeds", api.Auth(api.DeleteFeed)).Methods("DELETE")
 	r.HandleFunc("/v1/feed_follows", api.Auth(api.FollowFeed)).Methods("POST")
+	r.HandleFunc("/v1/feed_follows", api.GetAllFollowFeeds).Methods("GET")
 	r.HandleFunc("/v1/feed_follows/{feedFollowID}", api.Auth(api.UnfollowFeed)).Methods("DELETE")
 
 	corsMux := logMW(corsMW(r))
