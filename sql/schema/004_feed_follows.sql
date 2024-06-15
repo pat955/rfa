@@ -6,7 +6,8 @@ CREATE TABLE feed_follows (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (feed_id) REFERENCES feeds(id) ON DELETE CASCADE
+    FOREIGN KEY (feed_id) REFERENCES feeds(id) ON DELETE CASCADE,
+    UNIQUE(feed_id, user_id)
 );
 
 -- +goose Down
