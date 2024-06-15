@@ -17,6 +17,11 @@ type ID struct {
 	ID string `json:"id"`
 }
 
+type CreateFeedResponse struct {
+	Feed       database.Feed       `json:"feed"`
+	FeedFollow database.FeedFollow `json:"feed_follow"`
+}
+
 func CreateFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 	var feed Feed
 	decodeForm(r, &feed)
@@ -37,14 +42,18 @@ func CreateFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 		return
 	}
 	// default follows feed if user created it
-	a.DB.AddFeedFollow(r.Context(), database.AddFeedFollowParams{
+	follow_feed, err := a.DB.AddFeedFollow(r.Context(), database.AddFeedFollowParams{
 		ID:        uuid.New(),
 		FeedID:    f.ID,
 		UserID:    user.ID,
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 	})
-	respondWithJSON(w, 200, f)
+	if err != nil {
+		respondWithError(w, 500, "error in createFeed() "+err.Error())
+	}
+	response := CreateFeedResponse{Feed: f, FeedFollow: follow_feed}
+	respondWithJSON(w, 200, response)
 }
 
 func GetAllFeeds(w http.ResponseWriter, r *http.Request) {
