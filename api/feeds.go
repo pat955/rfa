@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -46,7 +45,7 @@ func CreateFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 func GetAllFeeds(w http.ResponseWriter, r *http.Request) {
 	allFeeds, err := Connect().DB.RetrieveFeeds(r.Context())
 	if err != nil {
-		respondWithError(w, 500, err.Error())
+		respondWithError(w, 404, "No feeds currently")
 		return
 	}
 	respondWithJSON(w, 200, allFeeds)
@@ -56,14 +55,19 @@ func DeleteFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 	var feed_id ID
 	decodeForm(r, &feed_id)
 	a := Connect()
+
 	id, err := uuid.Parse(feed_id.ID)
 	if err != nil {
 		respondWithError(w, 500, err.Error())
 		return
 	}
 
-	f, _ := a.DB.GetFeed(r.Context(), id)
-	fmt.Println(f)
+	f, err := a.DB.GetFeed(r.Context(), id)
+	if err != nil {
+		respondWithError(w, 404, err.Error())
+		return
+	}
+
 	if f.UserID == user.ID {
 		a.DB.DeleteFeed(r.Context(), id)
 		respondWithJSON(w, 204, nil)
@@ -74,7 +78,7 @@ func DeleteFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 
 func FollowFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 	var feed_follow FeedFollow
-	decodeForm(r, feed_follow)
+	decodeForm(r, &feed_follow)
 	id, err := uuid.Parse(feed_follow.FeedID)
 	if err != nil {
 		respondWithError(w, 500, err.Error())
