@@ -6,6 +6,8 @@ import (
 	"github.com/pat955/rss_feed_aggregator/internal/database"
 )
 
+type authedHandler func(http.ResponseWriter, *http.Request, database.User)
+
 func Auth(next authedHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		apiKey := GetApiKey(w, r)
@@ -21,5 +23,3 @@ func Auth(next authedHandler) http.HandlerFunc {
 		next(w, r, u)
 	}
 }
-
-type authedHandler func(http.ResponseWriter, *http.Request, database.User)
