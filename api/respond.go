@@ -13,6 +13,7 @@ func respondWithError(w http.ResponseWriter, statusCode int, msg string) {
 	type errorResponse struct {
 		Error string `json:"error"`
 	}
+
 	respondWithJSON(w, statusCode, errorResponse{
 		Error: msg,
 	})
