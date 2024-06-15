@@ -50,21 +50,21 @@ func (q *Queries) CreateFeed(ctx context.Context, arg CreateFeedParams) (Feed, e
 
 const deleteFeed = `-- name: DeleteFeed :exec
 DELETE FROM feeds
-WHERE url = $1
+WHERE id = $1
 `
 
-func (q *Queries) DeleteFeed(ctx context.Context, url string) error {
-	_, err := q.db.ExecContext(ctx, deleteFeed, url)
+func (q *Queries) DeleteFeed(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteFeed, id)
 	return err
 }
 
 const getFeed = `-- name: GetFeed :one
 SELECT id, created_at, updated_at, name, url, user_id FROM feeds
-WHERE url = $1
+WHERE id = $1
 `
 
-func (q *Queries) GetFeed(ctx context.Context, url string) (Feed, error) {
-	row := q.db.QueryRowContext(ctx, getFeed, url)
+func (q *Queries) GetFeed(ctx context.Context, id uuid.UUID) (Feed, error) {
+	row := q.db.QueryRowContext(ctx, getFeed, id)
 	var i Feed
 	err := row.Scan(
 		&i.ID,

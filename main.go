@@ -29,6 +29,7 @@ func main() {
 	r.HandleFunc("/v1/feeds", authMW(api.CreateFeed)).Methods("POST")
 	r.HandleFunc("/v1/feeds", api.GetAllFeeds).Methods("GET")
 	r.HandleFunc("/v1/feeds", authMW(api.DeleteFeed)).Methods("DELETE")
+	r.HandleFunc("/v1/feed_follows", authMW(api.FollowFeed)).Methods("POST")
 
 	corsMux := logMW(corsMW(r))
 

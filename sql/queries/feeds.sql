@@ -8,8 +8,8 @@ SELECT * FROM feeds;
 
 -- name: DeleteFeed :exec
 DELETE FROM feeds
-WHERE url = $1;
+WHERE id = $1;
 
 -- name: GetFeed :one
 SELECT * FROM feeds
-WHERE url = $1;
+WHERE id = $1;

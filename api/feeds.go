@@ -14,6 +14,13 @@ type Feed struct {
 	URL  string `json:"url"`
 }
 
+type FeedFollow struct {
+	FeedID string `json:"feed_id"`
+}
+type ID struct {
+	ID string `json:"id"`
+}
+
 func CreateFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 	var feed Feed
 	decodeForm(r, &feed)
@@ -46,19 +53,52 @@ func GetAllFeeds(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteFeed(w http.ResponseWriter, r *http.Request, user database.User) {
-	var url URL
-	decodeForm(r, &url)
+	var feed_id ID
+	decodeForm(r, &feed_id)
 	a := Connect()
-	f, _ := a.DB.GetFeed(r.Context(), url.URL)
-	fmt.Println(f.UserID, user.ID)
+	id, err := uuid.Parse(feed_id.ID)
+	if err != nil {
+		respondWithError(w, 500, err.Error())
+		return
+	}
+
+	f, _ := a.DB.GetFeed(r.Context(), id)
+	fmt.Println(f)
 	if f.UserID == user.ID {
-		a.DB.DeleteFeed(r.Context(), f.Url)
+		a.DB.DeleteFeed(r.Context(), id)
 		respondWithJSON(w, 204, nil)
 		return
 	}
-	respondWithError(w, 404, "feed not found")
+	respondWithError(w, 403, "no permission")
 }
 
-type URL struct {
-	URL string `json:"url"`
+func FollowFeed(w http.ResponseWriter, r *http.Request, user database.User) {
+	var feed_follow FeedFollow
+	decodeForm(r, feed_follow)
+	id, err := uuid.Parse(feed_follow.FeedID)
+	if err != nil {
+		respondWithError(w, 500, err.Error())
+		return
+	}
+
+	a := Connect()
+	feed, err := a.DB.GetFeed(r.Context(), id)
+	if err != nil {
+		respondWithError(w, 404, err.Error())
+		return
+	}
+	newFeedFollow, err := a.DB.AddFeedFollow(
+		r.Context(),
+		database.AddFeedFollowParams{
+			ID:        uuid.New(),
+			FeedID:    feed.ID,
+			UserID:    user.ID,
+			CreatedAt: time.Now().UTC(),
+			UpdatedAt: time.Now().UTC(),
+		})
+	if err != nil {
+		respondWithError(w, 500, err.Error())
+		return
+	}
+	respondWithJSON(w, 200, newFeedFollow)
 }
