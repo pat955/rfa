@@ -36,6 +36,14 @@ func CreateFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 		respondWithError(w, 409, err.Error())
 		return
 	}
+	// default follows feed if user created it
+	a.DB.AddFeedFollow(r.Context(), database.AddFeedFollowParams{
+		ID:        uuid.New(),
+		FeedID:    f.ID,
+		UserID:    user.ID,
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
+	})
 	respondWithJSON(w, 200, f)
 }
 

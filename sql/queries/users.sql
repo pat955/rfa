@@ -6,3 +6,6 @@ RETURNING *;
 -- name: GetUserByApiKey :one
 SELECT * FROM users
 WHERE api_key = $1;
+
+-- name: GetAllUsers :many
+SELECT * FROM users;

@@ -11,5 +11,9 @@ WHERE id = $1;
 SELECT * FROM feed_follows
 WHERE id = $1;
 
--- name: GetAllFeedFollows :one
+-- name: GetAllFeedFollows :many
 SELECT * FROM feed_follows;
+
+-- name: GetAllFollowed :many
+SELECT * FROM feed_follows
+WHERE user_id = $1;

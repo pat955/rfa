@@ -73,3 +73,13 @@ func UnfollowFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 	}
 	respondWithJSON(w, 204, nil)
 }
+
+func GetAllFollowedFeeds(w http.ResponseWriter, r *http.Request, user database.User) {
+	a := connect()
+	allFollowed, err := a.DB.GetAllFollowed(r.Context(), user.ID)
+	if err != nil {
+		respondWithError(w, 404, "no feeds followed by user")
+		return
+	}
+	respondWithJSON(w, 200, allFollowed)
+}

@@ -55,21 +55,71 @@ func (q *Queries) DeleteFeedFollow(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
-const getAllFeedFollows = `-- name: GetAllFeedFollows :one
+const getAllFeedFollows = `-- name: GetAllFeedFollows :many
 SELECT id, feed_id, user_id, created_at, updated_at FROM feed_follows
 `
 
-func (q *Queries) GetAllFeedFollows(ctx context.Context) (FeedFollow, error) {
-	row := q.db.QueryRowContext(ctx, getAllFeedFollows)
-	var i FeedFollow
-	err := row.Scan(
-		&i.ID,
-		&i.FeedID,
-		&i.UserID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+func (q *Queries) GetAllFeedFollows(ctx context.Context) ([]FeedFollow, error) {
+	rows, err := q.db.QueryContext(ctx, getAllFeedFollows)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FeedFollow
+	for rows.Next() {
+		var i FeedFollow
+		if err := rows.Scan(
+			&i.ID,
+			&i.FeedID,
+			&i.UserID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllFollowed = `-- name: GetAllFollowed :many
+SELECT id, feed_id, user_id, created_at, updated_at FROM feed_follows
+WHERE user_id = $1
+`
+
+func (q *Queries) GetAllFollowed(ctx context.Context, userID uuid.UUID) ([]FeedFollow, error) {
+	rows, err := q.db.QueryContext(ctx, getAllFollowed, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []FeedFollow
+	for rows.Next() {
+		var i FeedFollow
+		if err := rows.Scan(
+			&i.ID,
+			&i.FeedID,
+			&i.UserID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getFeedFollow = `-- name: GetFeedFollow :one

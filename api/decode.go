@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -9,6 +10,6 @@ import (
 // remember &dst, if you get json: Unmarshal(non-pointer) error
 func decodeForm(req *http.Request, dst interface{}) {
 	if err := json.NewDecoder(req.Body).Decode(dst); err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 }
