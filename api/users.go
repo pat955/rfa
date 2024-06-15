@@ -17,7 +17,7 @@ func AddUser(w http.ResponseWriter, r *http.Request) {
 	var u User
 
 	decodeForm(r, &u)
-	apiConfig := Connect()
+	apiConfig := connect()
 	newUser, err := apiConfig.DB.CreateUser(
 		r.Context(),
 		database.CreateUserParams{

@@ -23,7 +23,7 @@ type ID struct {
 func CreateFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 	var feed Feed
 	decodeForm(r, &feed)
-	a := Connect()
+	a := connect()
 	f, err := a.DB.CreateFeed(
 		r.Context(),
 		database.CreateFeedParams{
@@ -43,7 +43,7 @@ func CreateFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 }
 
 func GetAllFeeds(w http.ResponseWriter, r *http.Request) {
-	allFeeds, err := Connect().DB.RetrieveFeeds(r.Context())
+	allFeeds, err := connect().DB.RetrieveFeeds(r.Context())
 	if err != nil {
 		respondWithError(w, 404, "No feeds currently")
 		return
@@ -54,7 +54,7 @@ func GetAllFeeds(w http.ResponseWriter, r *http.Request) {
 func DeleteFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 	var feed_id ID
 	decodeForm(r, &feed_id)
-	a := Connect()
+	a := connect()
 
 	id, err := uuid.Parse(feed_id.ID)
 	if err != nil {
@@ -85,7 +85,7 @@ func FollowFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 		return
 	}
 
-	a := Connect()
+	a := connect()
 	feed, err := a.DB.GetFeed(r.Context(), id)
 	if err != nil {
 		respondWithError(w, 404, err.Error())
