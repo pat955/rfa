@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"net/http"
 	"time"
 
@@ -132,7 +133,8 @@ func GetFeed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	newTime := time.Now().UTC()
-	feed.LastFetchedAt.Time = newTime
+	feed.UpdatedAt = newTime
+	feed.LastFetchedAt = sql.NullTime{Time: newTime, Valid: true}
 	err = db.MarkedFetched(r.Context(), database.MarkedFetchedParams{
 		ID:            feed.ID,
 		UpdatedAt:     newTime,
