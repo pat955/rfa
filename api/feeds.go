@@ -42,6 +42,13 @@ func databaseFeedToFeed(feed database.Feed) FeedForJSON {
 		LastFetchedAt: &feed.LastFetchedAt.Time,
 	}
 }
+func databaseFeedsToFeeds(feeds []database.Feed) []FeedForJSON {
+	updatedFeeds := make([]FeedForJSON, 0)
+	for _, feed := range feeds {
+		updatedFeeds = append(updatedFeeds, databaseFeedToFeed(feed))
+	}
+	return updatedFeeds
+}
 
 func CreateFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 	var feed Feed
@@ -83,11 +90,7 @@ func GetAllFeeds(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, 404, "No feeds currently")
 		return
 	}
-	allFeedsResponse := make([]FeedForJSON, 0)
-	for _, feed := range allFeeds {
-		allFeedsResponse = append(allFeedsResponse, databaseFeedToFeed(feed))
-	}
-	respondWithJSON(w, 200, allFeedsResponse)
+	respondWithJSON(w, 200, databaseFeedsToFeeds(allFeeds))
 }
 
 func DeleteFeed(w http.ResponseWriter, r *http.Request, user database.User) {

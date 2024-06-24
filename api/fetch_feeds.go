@@ -17,5 +17,5 @@ func GetNextFeedsToFetch(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, 500, err.Error())
 		return
 	}
-	respondWithJSON(w, 200, feedsToUpdate)
+	respondWithJSON(w, 200, databaseFeedsToFeeds(feedsToUpdate))
 }
