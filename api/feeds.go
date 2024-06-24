@@ -21,6 +21,9 @@ type CreateFeedResponse struct {
 	Feed       FeedForJSON         `json:"feed"`
 	FeedFollow database.FeedFollow `json:"feed_follow"`
 }
+type Amount struct {
+	Amount int32 `json:"amount"`
+}
 
 type FeedForJSON struct {
 	ID            uuid.UUID
@@ -30,6 +33,17 @@ type FeedForJSON struct {
 	Url           string
 	UserID        uuid.UUID
 	LastFetchedAt *time.Time
+}
+
+func GetNextFeedsToFetch(w http.ResponseWriter, r *http.Request) {
+	var n Amount
+	decodeForm(r, &n)
+	db := connect().DB
+	feedsToUpdate, err := db.GetNextFeedsToFetch(r.Context(), n.Amount)
+	if err != nil {
+		respondWithError(w, 500, err.Error())
+	}
+	respondWithJSON(w, 200, feedsToUpdate)
 }
 
 func CreateFeed(w http.ResponseWriter, r *http.Request, user database.User) {

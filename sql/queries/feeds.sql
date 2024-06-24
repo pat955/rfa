@@ -13,3 +13,8 @@ WHERE id = $1;
 -- name: GetFeed :one
 SELECT * FROM feeds
 WHERE id = $1;
+
+-- name: GetNextFeedsToFetch :one
+SELECT * FROM feeds
+ORDER BY last_fetched_at
+LIMIT $1;
