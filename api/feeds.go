@@ -18,8 +18,18 @@ type ID struct {
 }
 
 type CreateFeedResponse struct {
-	Feed       database.Feed       `json:"feed"`
+	Feed       FeedForJSON         `json:"feed"`
 	FeedFollow database.FeedFollow `json:"feed_follow"`
+}
+
+type FeedForJSON struct {
+	ID            uuid.UUID
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	Name          string
+	Url           string
+	UserID        uuid.UUID
+	LastFetchedAt *time.Time
 }
 
 func CreateFeed(w http.ResponseWriter, r *http.Request, user database.User) {
@@ -52,7 +62,7 @@ func CreateFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 	if err != nil {
 		respondWithError(w, 500, "error in createFeed() "+err.Error())
 	}
-	response := CreateFeedResponse{Feed: f, FeedFollow: follow_feed}
+	response := CreateFeedResponse{Feed: databaseFeedToFeed(f), FeedFollow: follow_feed}
 	respondWithJSON(w, 200, response)
 }
 
@@ -62,7 +72,22 @@ func GetAllFeeds(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, 404, "No feeds currently")
 		return
 	}
-	respondWithJSON(w, 200, allFeeds)
+	allFeedsResponse := make([]FeedForJSON, 0)
+	for _, feed := range allFeeds {
+		allFeedsResponse = append(allFeedsResponse, databaseFeedToFeed(feed))
+	}
+	respondWithJSON(w, 200, allFeedsResponse)
+}
+
+func databaseFeedToFeed(feed database.Feed) FeedForJSON {
+	return FeedForJSON{ID: feed.ID,
+		CreatedAt:     feed.CreatedAt,
+		UpdatedAt:     feed.UpdatedAt,
+		Name:          feed.Name,
+		Url:           feed.Url,
+		UserID:        feed.UserID,
+		LastFetchedAt: &feed.LastFetchedAt.Time,
+	}
 }
 
 func DeleteFeed(w http.ResponseWriter, r *http.Request, user database.User) {
