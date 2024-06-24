@@ -13,3 +13,13 @@ WHERE id = $1;
 -- name: GetFeed :one
 SELECT * FROM feeds
 WHERE id = $1;
+
+-- name: GetNextFeedsToFetch :many
+SELECT * FROM feeds
+ORDER BY last_fetched_at DESC
+LIMIT $1;
+
+-- name: MarkedFetched :exec
+UPDATE feeds
+SET updated_at = $2, last_fetched_at = $3
+WHERE id = $1;
