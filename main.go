@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -42,5 +43,13 @@ func main() {
 		Addr:    ":" + port,
 		Handler: corsMux,
 	}
+
+	go func() {
+		for {
+			// change name?
+			api.RetrieveGroup()
+			time.Sleep(time.Second * 60)
+		}
+	}()
 	srv.ListenAndServe()
 }
