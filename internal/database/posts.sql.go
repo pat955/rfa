@@ -44,19 +44,21 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) error {
 }
 
 const getPostsByUser = `-- name: GetPostsByUser :many
-SELECT id, created_at, updated_at, title, url, description, published_at, feed_id FROM posts
-WHERE feed_id = $1
+SELECT posts.id, posts.created_at, posts.updated_at, posts.title, posts.url, posts.description, posts.published_at, posts.feed_id  FROM posts
+INNER JOIN feed_follows
+ON posts.feed_id = feed_follows.feed_id
+WHERE feed_follows.user_id = $1
 ORDER BY published_at DESC
 LIMIT $2
 `
 
 type GetPostsByUserParams struct {
-	FeedID uuid.UUID
+	UserID uuid.UUID
 	Limit  int32
 }
 
 func (q *Queries) GetPostsByUser(ctx context.Context, arg GetPostsByUserParams) ([]Post, error) {
-	rows, err := q.db.QueryContext(ctx, getPostsByUser, arg.FeedID, arg.Limit)
+	rows, err := q.db.QueryContext(ctx, getPostsByUser, arg.UserID, arg.Limit)
 	if err != nil {
 		return nil, err
 	}

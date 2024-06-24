@@ -34,6 +34,7 @@ func main() {
 	r.HandleFunc("/v1/feed_follows/{feedFollowID}", api.Auth(api.UnfollowFeed)).Methods("DELETE")
 	r.HandleFunc("/v1/next_to_fetch", api.GetNextFeedsToFetch).Methods("GET")
 	r.HandleFunc("/v1/get_feed/{feedID}", api.GetFeed).Methods("GET")
+	r.HandleFunc("/v1/posts", api.Auth(api.GetPostsByUser)).Methods("GET")
 
 	r.HandleFunc("/v1/debug/feed_follows", api.GetAllFollowFeeds).Methods("GET")
 
