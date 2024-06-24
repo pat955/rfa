@@ -8,7 +8,6 @@ func Health(w http.ResponseWriter, r *http.Request) {
 
 func Error(w http.ResponseWriter, r *http.Request) {
 	respondWithError(w, 500, "Internal Server Error")
-
 }
 
 type Status struct {

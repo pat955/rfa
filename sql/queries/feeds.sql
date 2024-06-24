@@ -14,7 +14,7 @@ WHERE id = $1;
 SELECT * FROM feeds
 WHERE id = $1;
 
--- name: GetNextFeedsToFetch :one
+-- name: GetNextFeedsToFetch :many
 SELECT * FROM feeds
-ORDER BY last_fetched_at
+ORDER BY last_fetched_at DESC
 LIMIT $1;

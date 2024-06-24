@@ -21,9 +21,6 @@ type CreateFeedResponse struct {
 	Feed       FeedForJSON         `json:"feed"`
 	FeedFollow database.FeedFollow `json:"feed_follow"`
 }
-type Amount struct {
-	Amount int32 `json:"amount"`
-}
 
 type FeedForJSON struct {
 	ID            uuid.UUID
@@ -35,15 +32,15 @@ type FeedForJSON struct {
 	LastFetchedAt *time.Time
 }
 
-func GetNextFeedsToFetch(w http.ResponseWriter, r *http.Request) {
-	var n Amount
-	decodeForm(r, &n)
-	db := connect().DB
-	feedsToUpdate, err := db.GetNextFeedsToFetch(r.Context(), n.Amount)
-	if err != nil {
-		respondWithError(w, 500, err.Error())
+func databaseFeedToFeed(feed database.Feed) FeedForJSON {
+	return FeedForJSON{ID: feed.ID,
+		CreatedAt:     feed.CreatedAt,
+		UpdatedAt:     feed.UpdatedAt,
+		Name:          feed.Name,
+		Url:           feed.Url,
+		UserID:        feed.UserID,
+		LastFetchedAt: &feed.LastFetchedAt.Time,
 	}
-	respondWithJSON(w, 200, feedsToUpdate)
 }
 
 func CreateFeed(w http.ResponseWriter, r *http.Request, user database.User) {
@@ -91,17 +88,6 @@ func GetAllFeeds(w http.ResponseWriter, r *http.Request) {
 		allFeedsResponse = append(allFeedsResponse, databaseFeedToFeed(feed))
 	}
 	respondWithJSON(w, 200, allFeedsResponse)
-}
-
-func databaseFeedToFeed(feed database.Feed) FeedForJSON {
-	return FeedForJSON{ID: feed.ID,
-		CreatedAt:     feed.CreatedAt,
-		UpdatedAt:     feed.UpdatedAt,
-		Name:          feed.Name,
-		Url:           feed.Url,
-		UserID:        feed.UserID,
-		LastFetchedAt: &feed.LastFetchedAt.Time,
-	}
 }
 
 func DeleteFeed(w http.ResponseWriter, r *http.Request, user database.User) {
