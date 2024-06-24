@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"github.com/pat955/rss_feed_aggregator/internal/database"
 )
 
@@ -32,7 +33,7 @@ type FeedForJSON struct {
 	LastFetchedAt *time.Time
 }
 
-func databaseFeedToFeed(feed database.Feed) FeedForJSON {
+func dbFeedToFeed(feed database.Feed) FeedForJSON {
 	return FeedForJSON{ID: feed.ID,
 		CreatedAt:     feed.CreatedAt,
 		UpdatedAt:     feed.UpdatedAt,
@@ -42,10 +43,10 @@ func databaseFeedToFeed(feed database.Feed) FeedForJSON {
 		LastFetchedAt: &feed.LastFetchedAt.Time,
 	}
 }
-func databaseFeedsToFeeds(feeds []database.Feed) []FeedForJSON {
+func dbFeedsToFeeds(feeds []database.Feed) []FeedForJSON {
 	updatedFeeds := make([]FeedForJSON, 0)
 	for _, feed := range feeds {
-		updatedFeeds = append(updatedFeeds, databaseFeedToFeed(feed))
+		updatedFeeds = append(updatedFeeds, dbFeedToFeed(feed))
 	}
 	return updatedFeeds
 }
@@ -80,7 +81,7 @@ func CreateFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 	if err != nil {
 		respondWithError(w, 500, "error in createFeed() "+err.Error())
 	}
-	response := CreateFeedResponse{Feed: databaseFeedToFeed(f), FeedFollow: follow_feed}
+	response := CreateFeedResponse{Feed: dbFeedToFeed(f), FeedFollow: follow_feed}
 	respondWithJSON(w, 200, response)
 }
 
@@ -90,7 +91,7 @@ func GetAllFeeds(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, 404, "No feeds currently")
 		return
 	}
-	respondWithJSON(w, 200, databaseFeedsToFeeds(allFeeds))
+	respondWithJSON(w, 200, dbFeedsToFeeds(allFeeds))
 }
 
 func DeleteFeed(w http.ResponseWriter, r *http.Request, user database.User) {
@@ -116,4 +117,31 @@ func DeleteFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 		return
 	}
 	respondWithError(w, 403, "no permission")
+}
+
+func GetFeed(w http.ResponseWriter, r *http.Request) {
+	feed_id, found := mux.Vars(r)["feedID"]
+	if !found {
+		respondWithError(w, 400, "no feed follow id in url")
+		return
+	}
+	db := connect().DB
+	feed, err := db.GetFeed(r.Context(), uuid.MustParse(feed_id))
+	if err != nil {
+		respondWithError(w, 404, err.Error())
+		return
+	}
+	newTime := time.Now().UTC()
+	feed.LastFetchedAt.Time = newTime
+	err = db.MarkedFetched(r.Context(), database.MarkedFetchedParams{
+		ID:            feed.ID,
+		UpdatedAt:     newTime,
+		LastFetchedAt: feed.LastFetchedAt,
+	})
+	if err != nil {
+		respondWithError(w, 500, err.Error())
+		return
+	}
+
+	respondWithJSON(w, 200, dbFeedToFeed(feed))
 }
