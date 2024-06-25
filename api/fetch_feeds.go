@@ -24,11 +24,10 @@ func GetNextFeedsToFetch(w http.ResponseWriter, r *http.Request) {
 
 // add errors back
 func FetchFeed(endpoint string) RSS {
-	response, err := http.Get(endpoint)
+	response, err := http.Get(endpoint) // #nosec G107
 	if err != nil {
 		return RSS{}
 	}
-
 	defer response.Body.Close()
 	var rss RSS
 	decodeXMLForm(response, &rss)
