@@ -113,7 +113,11 @@ func DeleteFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 	}
 
 	if f.UserID == user.ID {
-		a.DB.DeleteFeed(r.Context(), id)
+		err = a.DB.DeleteFeed(r.Context(), id)
+		if err != nil {
+			respondWithError(w, 500, err.Error())
+			return
+		}
 		respondWithJSON(w, 204, nil)
 		return
 	}

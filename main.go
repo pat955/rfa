@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -41,8 +42,10 @@ func main() {
 	corsMux := logMW(corsMW(r))
 
 	srv := &http.Server{
-		Addr:    ":" + port,
-		Handler: corsMux,
+		Addr:              ":" + port,
+		Handler:           corsMux,
+		ReadHeaderTimeout: 30 * time.Second,
+		WriteTimeout:      30 * time.Second,
 	}
 
 	go func() {
@@ -52,7 +55,10 @@ func main() {
 			time.Sleep(time.Second * 60)
 		}
 	}()
-	srv.ListenAndServe()
+	err := srv.ListenAndServe()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // Support pagination of the endpoints that can return many items
