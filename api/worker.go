@@ -48,7 +48,6 @@ func RetrieveGroup() {
 				} else {
 					log.Fatal(err)
 				}
-
 			}
 		}()
 	}
